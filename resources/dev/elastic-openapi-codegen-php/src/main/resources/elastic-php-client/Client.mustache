@@ -1,17 +1,14 @@
 <?php
-{{>header}}
+
+declare(strict_types=1);
 
 namespace {{invokerPackage}};
 
-/**
- * Client implementation.
- *
- * @package {{invokerPackage}}
- */
-{{#clientClassQualifier}}{{{.}}} {{/clientClassQualifier}}class {{clientClass}} extends \Elastic\OpenApi\Codegen\AbstractClient
-{
-    // phpcs:disable
-{{#apiInfo}}{{#apis}}{{#operations}}{{#operation}}
+{{#models}}{{#model}}use {{importPath}};
+{{/model}}{{/models}}use Elastic\OpenApi\Codegen\AbstractClient;
+
+{{#clientClassQualifier}}{{{.}}} {{/clientClassQualifier}}class {{clientClass}} extends AbstractClient
+{{=<% %>=}}{<%#apiInfo%><%={{ }}=%>{{#apis}}{{#operations}}{{#operation}}
     /**
 {{#summary}}
      * {{.}}
@@ -25,35 +22,34 @@ namespace {{invokerPackage}};
      * Documentation: {{url}}
      *
 {{/externalDocs}}
-{{#allParams}}
-     * @param {{dataType}} ${{paramName}}{{#description}} {{description}}{{/description}}
-{{/allParams}}
-     *
-     * @return array
+     * @return array<mixed>
      */
-    {{vendorExtensions.x-operation-scope}} function {{operationId}}({{#allParams}}${{paramName}}{{^required}} = {{#defaultValue}}{{{.}}}{{/defaultValue}}{{^defaultValue}}null{{/defaultValue}}{{/required}}{{#hasMore}}, {{/hasMore}}{{/allParams}})
-    {
-{{#allParams.0}}
-        $params = [
+    {{vendorExtensions.x-operation-scope}} function {{operationId}}({{#pathParams}}
+        {{dataType}} ${{paramName}}{{^required}} = {{#defaultValue}}{{{.}}}{{/defaultValue}}{{^defaultValue}}null{{/defaultValue}}{{/required}}{{#hasMore}},{{/hasMore}}{{/pathParams}}{{#pathParams.0}}{{^queryParams.0}}{{^bodyParams.0}}{{^formParams.0}}
+    {{/formParams.0}}{{/bodyParams.0}}{{/queryParams.0}}{{/pathParams.0}}{{#queryParams.0}}{{#pathParams.0}},{{/pathParams.0}}
+        ?{{operationIdCamelCase}}Query $query = null{{^bodyParams.0}}{{^formParams.0}}
+    {{/formParams.0}}{{/bodyParams.0}}{{/queryParams.0}}{{#bodyParams.0}}{{#pathParams.0}},{{/pathParams.0}}{{#queryParams.0}}{{^pathParams.0}},{{/pathParams.0}}{{/queryParams.0}}
+        {{^bodyParams.0.required}}?{{/bodyParams.0.required}}{{bodyParams.0.baseType}} $body{{^bodyParams.0.required}} = null{{/bodyParams.0.required}}{{^formParams.0}}
+    {{/formParams.0}}{{/bodyParams.0}}{{#formParams.0}}{{#pathParams.0}},{{/pathParams.0}}{{#queryParams.0}}{{^pathParams.0}},{{/pathParams.0}}{{/queryParams.0}}{{#bodyParams.0}}{{^queryParams.0}}{{^pathParams.0}},{{/pathParams.0}}{{/queryParams.0}}{{/bodyParams.0}}
+        {{^formParams.0.required}}?{{/formParams.0.required}}{{formParams.0.baseType}} $form{{^formParams.0.required}} = null{{/formParams.0.required}}
+    {{/formParams.0}}): array{{^pathParams.0}}{{^queryParams.0}}{{^bodyParams.0}}{{^formParams.0}}
+   {{/formParams.0}}{{/bodyParams.0}}{{/queryParams.0}}{{/pathParams.0}} {
+        {{#pathParams.0}}
+        $path = [
             {{#pathParams}}
             '{{baseName}}' => ${{paramName}},
             {{/pathParams}}
-            {{#queryParams}}
-            '{{baseName}}' => ${{paramName}},
-            {{/queryParams}}
         ];
-{{/allParams.0}}
 
-        $endpoint = $this->getEndpoint('{{classname}}');
-{{#allParams.0}}
-        $endpoint->setParams($params);
-{{/allParams.0}}
-{{#bodyParams.0}}
-        $endpoint->setBody(${{paramName}});
-{{/bodyParams.0}}
-
-        return $this->performRequest($endpoint);
+        {{/pathParams.0}}
+        return $this->performRequest(
+            $this
+                ->endpoint('{{classname}}'){{#pathParams.0}}{{^queryParams.0}}
+                ->setParams($path){{/queryParams.0}}{{/pathParams.0}}{{^pathParams.0}}{{#queryParams.0}}
+                ->setParams($query ? $query->toArray() : []){{/queryParams.0}}{{/pathParams.0}}{{#pathParams.0}}{{#queryParams.0}}
+                ->setParams($path + ($query ? $query->toArray() : [])){{/queryParams.0}}{{/pathParams.0}}{{#bodyParams.0}}
+                ->setBody({{^bodyParams.0.required}}$body ? {{/bodyParams.0.required}}{{#bodyParams.0.isFreeFormObject}}(array) $body{{/bodyParams.0.isFreeFormObject}}{{^bodyParams.0.isFreeFormObject}}$body->toArray(){{/bodyParams.0.isFreeFormObject}}{{^bodyParams.0.required}} : []{{/bodyParams.0.required}}){{/bodyParams.0}}{{#formParams.0}}
+                ->setFormData({{#formParams.0.required}}$form->toArray(){{/formParams.0.required}}{{^formParams.0.required}}$form ? $form->toArray() : []{{/formParams.0.required}}){{/formParams.0}}
+        );
     }
-{{/operation}}{{/operations}}{{/apis}}{{/apiInfo}}
-    // phpcs:enable
-}
+{{/operation}}{{/operations}}{{/apis}}{{/apiInfo}}}
